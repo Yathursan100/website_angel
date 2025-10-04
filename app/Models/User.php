@@ -39,10 +39,10 @@ class User extends Authenticatable
         return $this->hasMany(Posts::class);
     }
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return $this->email == 'gyathursan@yahoo.com';
-    }
+    // public function canAccessPanel(Panel $panel): bool
+    // {
+    //     return $this->email == 'gyathursan@yahoo.com';
+    // }
 
     /**
      * The attributes that should be hidden for serialization.

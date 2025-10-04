@@ -6,14 +6,13 @@ This project was developed using Laravel ^12.0, Filament ^4.0  and Livewire
 2. This project uses SQLite, so no external database setup is required.
 3. Install packages: 
 `composer install`
-`npm install && npm run build`
+`npm install`
+`npm run build`
 `php artisan key:generate`
 `php artisan migrate`
 4. Run the local server: `php artisan serve`
 5. Access the backend login panel:
-    URL: `http://localhost:8000/admin/login`
-    Email: `gyathursan@yahoo.com`
-    Password: ` Exam123!!! `
+    Create Filament user: `php artisan make:filament-user` then provide `username`, `email`, `password`
 
  ## Simple Explation
  - Filament panel installed and a default user created.
