@@ -39,7 +39,7 @@ class UsersTable
                     ->label('City')
                     ->searchable(),
                 TextColumn::make('posts_count')
-                ->label('No Posts'),
+                ->label('Posts Count'),
             ])
             ->filters([
                 SelectFilter::make('city')
@@ -65,7 +65,7 @@ class UsersTable
             ])
             ->headerActions([
                 Action::make('UpdateUsers')
-                    ->label('Improt Users from API')
+                    ->label('Import Users Api Data')
                     ->action(function () {
                         $res = Http::get('https://jsonplaceholder.typicode.com/users');
                         $users = $res->json();

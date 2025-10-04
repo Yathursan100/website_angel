@@ -1,20 +1,27 @@
 ## Website Angle Take Home Test - Yathursan 
 This project was developed using Laravel ^12.0, Filament ^4.0  and Livewire
 
-## Setup iinstruction
+## Setup Instructions
 1. Ensure your PHP version is ^8.2.
 2. This project uses SQLite, so no external database setup is required.
-3. Install packages: 
+3. Clone the project from Github to your local environment
+`git clone https://github.com/Yathursan100/website_angel`
+`cd website_angel`
+4. Install packages: 
 `composer install`
 `npm install`
 `npm run build`
 `php artisan key:generate`
 `php artisan migrate`
-4. Run the local server: `php artisan serve`
-5. Access the backend login panel:
+5. Run the local server: `php artisan serve`
+6. Access the backend login panel:
     Create Filament user: `php artisan make:filament-user` then provide `username`, `email`, `password`
+    you can login here (`http://localhost:8000/admin/login`) with your email and password. 
+7. In the backend panel, 
+  - select user from the side bar and "Import Users Api Data"
+  - select post from the side bar and "Import Posts Api Data" 
 
- ## Simple Explation
+ ## Simple Explanation
  - Filament panel installed and a default user created.
  - User model created with migration update_user_table including necessary attributes.
  - Post model created and migrated.

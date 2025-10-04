@@ -66,7 +66,7 @@ class PostsTable
             ])
             ->headerActions([
                 Action::make('Update Post')
-                    ->label('Import Post API data')
+                    ->label('Import Posts Api Data')
                     ->action(function () {
                         $res = Http::get('https://jsonplaceholder.typicode.com/posts');
                         $posts = $res->json();
