@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -67,8 +68,16 @@ class UsersTable
                 Action::make('UpdateUsers')
                     ->label('Import Users Api Data')
                     ->action(function () {
+                        try{
                         $res = Http::get('https://jsonplaceholder.typicode.com/users');
+                        if($res->failed())
+                        {
+                            throw new \Exception('Failed to fetch uses API data');
+                        }
                         $users = $res->json();
+                        if(empty($users)|| !is_array($users)){
+                            throw new \Exception('Invalid data received');
+                        }
                         foreach ($users as $user) {
                             if (empty($user['email'])) {
                                 continue;
@@ -87,9 +96,23 @@ class UsersTable
                                 ]
                             );
                         }
-                    })
-                    ->requiresConfirmation()
-                    ->successNotificationTitle('Recent User Data updated successfully'),
+                        Notification::make()
+                        ->title('Users API data imported successfully')
+                        ->success()
+                        ->body('All valid user in the API')
+                        ->send();
+                        } catch(\Exception $e){
+                            Notification::make()
+                            ->title('Import Faild')
+                            ->danger()
+                            ->body($e->getMessage())
+                            ->send();
+
+                        }
+                        
+                    }),
+                    // ->requiresConfirmation()
+                    // ->successNotificationTitle('Recent User Data updated successfully'),
             ]);
     }
 }

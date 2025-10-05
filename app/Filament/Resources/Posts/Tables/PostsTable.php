@@ -11,6 +11,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -24,11 +25,11 @@ class PostsTable
     {
         return $table
             ->columns([
-               
+
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('user.name')
-                ->label('User Name'),
+                    ->label('User Name'),
                 IconColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(function ($record) {
@@ -40,13 +41,13 @@ class PostsTable
                     ->tooltip(function ($record) {
                         return $record->is_published ? 'Published' : 'Draft';
                     }),
-                
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->default(now()),
-                   // ->toggleable(isToggledHiddenByDefault: true),
-                
+                // ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 SelectFilter::make('user')
@@ -68,29 +69,64 @@ class PostsTable
                 Action::make('Update Post')
                     ->label('Import Posts Api Data')
                     ->action(function () {
-                        $res = Http::get('https://jsonplaceholder.typicode.com/posts');
-                        $posts = $res->json();
-                        foreach ($posts as $post) {
-                            if (empty($post['id'])) {
-                                continue;
+                        $noUsers = [];
+                        try {
+                            $res = Http::get('https://jsonplaceholder.typicode.com/posts');
+                            if ($res->failed()) {
+                                throw new \Exception('Failed to fectch posts API data');
                             }
-                            $title = $post['title'] ?? '';
-                            $slug = Str::slug($title);
-                            $user = User::where('external_id', $post['userId'])->first();
-                            Posts::updateOrInsert(
-                                ['external_id' => $post['id']],
-                                [
-                                    'user_id' => $user ? $user->id : null,
-                                    'title' => $post['title'],
-                                    'slug' => $slug,
-                                    'body' => $post['body'] ?? null,
-                                    'is_published' => true,
-                                ]
-                            );
+                            $posts = $res->json();
+                            if (empty($posts) || ! is_array($posts)) {
+                                throw new \Exception('Invalid data received');
+                            }
+                            foreach ($posts as $post) {
+                                if (empty($post['id']) || empty($post['userId'])) {
+                                    continue;
+                                }
+                                $user = User::where('external_id', $post['userId'])->first();
+                                if (! $user) {
+                                    $noUsers[] = $post['userId'];
+
+                                    continue;
+                                }
+                                $title = $post['title'] ?? 'Untitled';
+                                $slug = Str::slug($title);
+                                Posts::updateOrInsert(
+                                    ['external_id' => $post['id']],
+                                    [
+                                        'user_id' => $user ? $user->id : null,
+                                        'title' => $post['title'],
+                                        'slug' => $slug,
+                                        'body' => $post['body'] ?? null,
+                                        'is_published' => true,
+                                    ]
+                                );
+                            }
+                            if (! empty($noUsers)) {
+                                $missingUsers = implode(' ,', array_unique($noUsers));
+                                Notification::make()
+                                    ->title("ADD/UPDATE USER TABLE !!!")
+                                    ->warning()
+                                    ->body("Please add following users {$missingUsers}")
+                                    ->send();
+
+                            } else {
+                                Notification::make()
+                                    ->title('Posts API data imported successfully')
+                                    ->success()
+                                    ->body('All vaild post in the API')
+                                    ->send();
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Import Failed')
+                                ->danger()
+                                ->body($e->getMessage())
+                                ->send();
                         }
-                    })
-                    ->requiresConfirmation()
-                    ->successNotificationTitle('Recent Post Details updated successfully'),
+                    }),
+                // ->requiresConfirmation()
+                // ->successNotificationTitle('Recent Post Details updated successfully'),
             ]);
     }
 }
